@@ -12,6 +12,10 @@ class Country:
         self.users_count = 1
 
 
+def get_longest_country_name_length(names_of_countries):
+    return max([len(country_name) for country_name in names_of_countries])
+
+
 class IpCountryParser:
     url = ''
     anchors = []
@@ -31,42 +35,42 @@ class IpCountryParser:
 
     def find_bdis(self, anchors):
         if anchors is not None:
-            print(f'Найдено {len(anchors)} ссылок')
+            print(f'{len(anchors)} anchors found')
             for anchor in anchors:
                 bdi = anchor.find('bdi')
                 if bdi is not None:
                     self.bdis.add(bdi.get_text())
         else:
-            print('Ссылки не найдены')
+            print('Anchors were not found')
 
     def find_ips(self, bdis):
         if len(bdis) != 0:
-            print(f'Найдено {len(bdis)} тегов bdi')
+            print(f'{len(bdis)} <bdi> tags found')
             self.ips = re.findall(self.ipv4_regex, ' '.join(bdis))
         else:
-            print('Теги <bdi> не найдены')
+            print('<bdi> tags were not found')
 
     def find_countries(self, ips):
         if len(ips) != 0:
-            print(f'Найдено {len(ips)} IP-адресов:', *ips, sep='\n')
-            print('\nОпределение стран и количества пользователей...\n')
+            print(f'{len(ips)} IP-addresses found:', *ips, sep='\n')
+            print('\nDetermining countries and the number of users...\n')
             for ip in ips:
                 ipstack_url = f'http://api.ipstack.com/{ip}?access_key={self.ipstack_access_key}'
                 ipstack_request = requests.get(ipstack_url)
                 country_name = ipstack_request.json()['country_name']
                 names_of_countries = [country.name for country in self.countries]
                 if country_name not in names_of_countries:
-                    country = Country(country_name)
-                    self.countries.append(country)
+                    new_country = Country(country_name)
+                    self.countries.append(new_country)
                 else:
-                    country = next(filter(lambda country: country.name == country_name, self.countries), None)
-                    country.users_count += 1
+                    existing_country = list(filter(lambda country: country.name == country_name, self.countries))[0]
+                    existing_country.users_count += 1
         else:
-            print('IP-адреса не найдены')
+            print('IP-addresses were not found')
 
     def print_countries(self):
         names_of_countries = [country.name for country in self.countries]
-        longest_country_name = max([len(country_name) for country_name in names_of_countries])
+        longest_country_name = get_longest_country_name_length(names_of_countries)
         for country in self.countries:
             separator = ' ' * (longest_country_name - len(country.name) + 2)
             print(country.name, country.users_count, sep=separator)
