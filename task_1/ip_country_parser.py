@@ -46,15 +46,18 @@ class IpCountryParser:
                 ipstack_url = f'http://api.ipstack.com/{ip}?access_key={self.ipstack_access_key}'
                 ipstack_request = requests.get(ipstack_url)
                 country_name = ipstack_request.json()['country_name']
-                names_of_countries = [country.name for country in self.countries]
-                if country_name not in names_of_countries:
-                    new_country = Country(country_name)
-                    self.countries.append(new_country)
-                else:
-                    existing_country = list(filter(lambda country: country.name == country_name, self.countries))[0]
-                    existing_country.users_count += 1
+                self.update_users_count(country_name)
         else:
             print('IP-addresses were not found')
+
+    def update_users_count(self, country_name):
+        names_of_countries = [country.name for country in self.countries]
+        if country_name not in names_of_countries:
+            new_country = Country(country_name)
+            self.countries.append(new_country)
+        else:
+            existing_country = list(filter(lambda country: country.name == country_name, self.countries))[0]
+            existing_country.users_count += 1
 
     def print_countries(self):
         self.find_anchors(self.url)
