@@ -1,19 +1,7 @@
 import requests
-import re
 from bs4 import BeautifulSoup
-
-
-class Country:
-    name = ''
-    users_count = 0
-
-    def __init__(self, name):
-        self.name = name
-        self.users_count = 1
-
-
-def get_longest_country_name_length(names_of_countries):
-    return max([len(country_name) for country_name in names_of_countries])
+import re
+from country import *
 
 
 class IpCountryParser:
@@ -69,18 +57,16 @@ class IpCountryParser:
             print('IP-addresses were not found')
 
     def print_countries(self):
+        self.find_anchors(self.url)
+        self.find_bdis(self.anchors)
+        self.find_ips(self.bdis)
+        self.find_countries(self.ips)
         names_of_countries = [country.name for country in self.countries]
-        longest_country_name = get_longest_country_name_length(names_of_countries)
+        longest_country_name_length = self.get_longest_length(names_of_countries)
         for country in self.countries:
-            separator = ' ' * (longest_country_name - len(country.name) + 2)
+            separator = ' ' * (longest_country_name_length - len(country.name) + 2)
             print(country.name, country.users_count, sep=separator)
 
-
-if __name__ == '__main__':
-    wiki_url = 'https://ru.wikipedia.org/w/index.php?title=JSON&action=history'
-    parser = IpCountryParser(wiki_url)
-    parser.find_anchors(parser.url)
-    parser.find_bdis(parser.anchors)
-    parser.find_ips(parser.bdis)
-    parser.find_countries(parser.ips)
-    parser.print_countries()
+    @staticmethod
+    def get_longest_length(names_of_countries):
+        return max([len(country_name) for country_name in names_of_countries])
