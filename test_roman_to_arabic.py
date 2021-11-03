@@ -1,9 +1,9 @@
 import unittest
 import roman
-import lab1
+import roman_to_arabic
 
 
-class TestLab1(unittest.TestCase):
+class TestRomanToArabic(unittest.TestCase):
     roman_and_arabic_cases = [['Число MMMDCCLXXIII больше 100.', 'Число 3773 больше 100.'],
                               ['В MDCLXIII году Том съел III яблока и выпил XVIII литров молока.',
                                'В 1663 году Том съел 3 яблока и выпил 18 литров молока.'],
@@ -19,13 +19,13 @@ class TestLab1(unittest.TestCase):
 
     def test_convert_roman_to_arabic_returns_correct_result(self):
         for line_with_roman, line_with_arabic in self.roman_and_arabic_cases:
-            roman_to_arabic_result = lab1.convert_roman_to_arabic(line_with_roman)
+            roman_to_arabic_result = roman_to_arabic.convert_roman_to_arabic(line_with_roman)
             self.assertEqual(roman_to_arabic_result, line_with_arabic)
             print(line_with_roman, line_with_arabic, sep='\n', end='\n\n')
 
     def test_convert_roman_to_arabic_raises_error(self):
         for incorrect_line_with_roman in self.error_cases:
-            self.assertRaises(roman.InvalidRomanNumeralError, lab1.convert_roman_to_arabic, incorrect_line_with_roman)
+            self.assertRaises(roman.InvalidRomanNumeralError, roman_to_arabic.convert_roman_to_arabic, incorrect_line_with_roman)
 
 
 if __name__ == '__main__':
