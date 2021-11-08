@@ -25,7 +25,8 @@ class TestRomanToArabic(unittest.TestCase):
 
     def test_convert_roman_to_arabic_raises_error(self):
         for incorrect_line_with_roman in self.error_cases:
-            self.assertRaises(roman.InvalidRomanNumeralError, roman_to_arabic.convert_roman_to_arabic, incorrect_line_with_roman)
+            self.assertRaises(roman.InvalidRomanNumeralError, roman_to_arabic.convert_roman_to_arabic,
+                              incorrect_line_with_roman)
 
 
 if __name__ == '__main__':

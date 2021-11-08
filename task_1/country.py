@@ -4,3 +4,6 @@ class Country:
 
     def __init__(self, name):
         self.name = name
+
+    def increase_users_count(self):
+        self.users_count += 1

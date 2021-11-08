@@ -1,6 +1,7 @@
 import requests
-from bs4 import BeautifulSoup
 import re
+import json
+from bs4 import BeautifulSoup
 from country import *
 
 
@@ -19,7 +20,7 @@ class IpCountryParser:
     def find_anchors(self, url):
         request = requests.get(url)
         soup = BeautifulSoup(request.content, 'html.parser')
-        self.anchors = soup.find_all("a", {'class': 'mw-userlink mw-anonuserlink'})
+        self.anchors = soup.find_all('a', {'class': 'mw-userlink mw-anonuserlink'})
 
     def find_bdis(self, anchors):
         if anchors is not None:
@@ -38,38 +39,37 @@ class IpCountryParser:
         else:
             print('<bdi> tags were not found')
 
-    def find_countries(self, ips):
+    def determine_countries(self, ips):
         if len(ips) != 0:
             print(f'{len(ips)} IP-addresses found:', *ips, sep='\n')
             print('\nDetermining countries and the number of users...\n')
             for ip in ips:
-                ipstack_url = f'http://api.ipstack.com/{ip}?access_key={self.ipstack_access_key}'
-                ipstack_request = requests.get(ipstack_url)
-                country_name = ipstack_request.json()['country_name']
-                self.update_users_count(country_name)
+                request = requests.get(f'http://ip-api.com/json/{ip}')
+                country_name = request.json()['country']
+                country = self.find_country_by_name(country_name)
+                if country is not None:
+                    country.increase_users_count()
+                else:
+                    self.countries.append(Country(country_name))
         else:
             print('IP-addresses were not found')
 
-    def update_users_count(self, country_name):
-        names_of_countries = [country.name for country in self.countries]
-        if country_name not in names_of_countries:
-            new_country = Country(country_name)
-            self.countries.append(new_country)
-        else:
-            existing_country = list(filter(lambda country: country.name == country_name, self.countries))[0]
-            existing_country.users_count += 1
+    def find_country_by_name(self, country_name):
+        if country_name in map(lambda c: c.name, self.countries):
+            return list(filter(lambda country: country.name == country_name, self.countries))[0]
+        return None
+
+    def get_countries_as_dictionary(self):
+        names_of_countries = map(lambda c: c.name, self.countries)
+        users_count_of_countries = map(lambda c: c.users_count, self.countries)
+        countries_dict = dict(zip(names_of_countries, users_count_of_countries))
+        sorted_countries_dict = dict(sorted(countries_dict.items(), key=lambda item: item[1], reverse=True))
+        return sorted_countries_dict
 
     def print_countries(self):
         self.find_anchors(self.url)
         self.find_bdis(self.anchors)
         self.find_ips(self.bdis)
-        self.find_countries(self.ips)
-        names_of_countries = [country.name for country in self.countries]
-        longest_country_name_length = self.get_longest_length(names_of_countries)
-        for country in self.countries:
-            separator = ' ' * (longest_country_name_length - len(country.name) + 2)
-            print(country.name, country.users_count, sep=separator)
-
-    @staticmethod
-    def get_longest_length(names_of_countries):
-        return max([len(country_name) for country_name in names_of_countries])
+        self.determine_countries(self.ips)
+        countries_as_dictionary = self.get_countries_as_dictionary()
+        print(json.dumps(countries_as_dictionary, indent=4, sort_keys=False))
